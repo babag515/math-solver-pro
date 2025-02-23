@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Problem Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .solution {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-left-width: 5px;
+            border-left-color: #5cb85c;
+        }
+        .error {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-left-width: 5px;
+            border-left-color: #d9534f;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Math Problem Solver</h1>
+    <input type="text" id="problemInput" placeholder="Enter your math problem here..." />
+    <button onclick="solveProblem()">Solve</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    function solveProblem() {
+        const problem = document.getElementById('problemInput').value.trim();
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = ''; // Clear previous results
+
+        if (!problem) {
+            resultDiv.innerHTML = '<div class="error">Please enter a valid math problem.</div>';
+            return;
+        }
+
+        try {
+            const solution = stepByStepSolution(problem);
+            resultDiv.innerHTML = `<div class="solution">${solution}</div>`;
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+    }
+
+    function stepByStepSolution(expression) {
+        let steps = [];
+        let currentExpression = expression;
+
+        // Simplify parentheses first
+        while (currentExpression.includes('(')) {
+            const regex = /\([^()]+\)/; // Find innermost parentheses
+            const match = regex.exec(currentExpression);
+
+            if (match) {
+                const subExpr = match[0].slice(1, -1); // Remove parentheses
+                const evaluated = evaluateSimpleExpression(subExpr);
+                currentExpression = currentExpression.replace(match[0], evaluated);
+                steps.push(`Evaluate ${match[0]} to ${evaluated}`);
+            }
+        }
+
+        // Evaluate remaining expression
+        const finalResult = evaluateSimpleExpression(currentExpression);
+        steps.push(`Final result: ${finalResult}`);
+
+        return steps.join('<br>');
+    }
+
+    function evaluateSimpleExpression(expr) {
+        try {
+            const sanitized = expr.replace(/[^\d\+\-\*\/\.\(\)]/g, ''); // Sanitize input
+            const result = Function(`'use strict'; return (${sanitized});`)(); // Safely evaluate
+            return result;
+        } catch (e) {
+            throw new Error(`Invalid expression: ${expr}`);
+        }
+    }
+</script>
+
+</body>
+</html>
